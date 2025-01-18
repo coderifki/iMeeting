@@ -13,6 +13,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::get('/create_roomeeting', function () {
+    return view('add_room');
+})->name('add_room'); // Added route name for add_room
+
 Route::get('/', function () {
-    return view('welcome');
-});
+    return view('homepage');
+})->name('homepage'); // Added route name for homepage
