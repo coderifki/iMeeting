@@ -17,80 +17,80 @@ class MeetingController extends Controller
 
     public function store(Request $request)
     {
+        // Validasi Input
         $request->validate([
-            'room_id' => 'required|exists:rooms,id',
-            'meeting_date' => 'required|date',
+            'unit' => 'required',
+            'room' => 'required|exists:rooms,id',
+            'date' => 'required|date',
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
             'participants' => 'required|integer|min:1',
+        ], [
+            'room.exists' => 'Ruang meeting yang dipilih tidak valid.',
+            'end_time.after' => 'Waktu selesai harus lebih besar dari waktu mulai.',
         ]);
 
-        // Validasi Kapasitas Ruangan
-        $room = RoomModel::findOrFail($request->room_id);
+        // Validasi tambahan: Jumlah peserta tidak boleh lebih besar dari kapasitas ruangan
+        $room = RoomModel::findOrFail($request->room);
         if ($request->participants > $room->capacity) {
             return back()->withErrors(['participants' => 'Jumlah peserta tidak boleh lebih besar dari kapasitas ruangan.']);
         }
 
-        // Hitung Konsumsi Berdasarkan Waktu
-        $start_time = strtotime($request->start_time);
-        $end_time = strtotime($request->end_time);
-        $participants = $request->participants;
-
-        $consumptions = [];
-        $total_cost = 0;
-
-        // Snack Siang
-        if ($start_time < strtotime('11:00') || $end_time > strtotime('11:00')) {
-            $consumptions[] = [
-                'type' => 'Snack Siang',
-                'cost_per_unit' => 20000,
-            ];
-        }
-
-        // Makan Siang
-        if ($start_time < strtotime('14:00') && $end_time > strtotime('11:00')) {
-            $consumptions[] = [
-                'type' => 'Makan Siang',
-                'cost_per_unit' => 30000,
-            ];
-        }
-
-        // Snack Sore
-        if ($start_time >= strtotime('14:00') || $end_time > strtotime('14:00')) {
-            $consumptions[] = [
-                'type' => 'Snack Sore',
-                'cost_per_unit' => 20000,
-            ];
-        }
-
-        // Hitung Total Konsumsi
-        foreach ($consumptions as &$consumption) {
-            $consumption['quantity'] = $participants;
-            $consumption['total_cost'] = $participants * $consumption['cost_per_unit'];
-            $total_cost += $consumption['total_cost'];
-        }
-
-        // Simpan Meeting
+        // 1. Simpan ke tabel meetings
         $meeting = MeetingModel::create([
-            'room_id' => $request->room_id,
-            'meeting_date' => $request->meeting_date,
+            'room_id' => $request->room,
+            'meeting_date' => $request->date,
             'start_time' => $request->start_time,
             'end_time' => $request->end_time,
-            'participants' => $participants,
-            'total_cost' => $total_cost,
+            'participants' => $request->participants,
+            'total_cost' => 0, // Akan diupdate setelah konsumsi dihitung
         ]);
 
-        // Simpan Konsumsim
-        foreach ($consumptions as $consumption) {
-            $meeting->consumptions()->create($consumption);
+        // 2. Hitung konsumsi berdasarkan waktu
+        $consumptions = [];
+        $startTime = strtotime($request->start_time);
+        $endTime = strtotime($request->end_time);
+
+        // Aturan konsumsi otomatis
+        if ($startTime < strtotime('11:00:00')) {
+            $consumptions[] = [
+                'meeting_id' => $meeting->id,
+                'type' => 'Snack Pagi',
+                'quantity' => $request->participants,
+                'cost_per_unit' => 20000,
+                'total_cost' => $request->participants * 20000,
+            ];
+        }
+        if ($endTime >= strtotime('11:00:00') && $startTime <= strtotime('14:00:00')) {
+            $consumptions[] = [
+                'meeting_id' => $meeting->id,
+                'type' => 'Makan Siang',
+                'quantity' => $request->participants,
+                'cost_per_unit' => 30000,
+                'total_cost' => $request->participants * 30000,
+            ];
+        }
+        if ($endTime > strtotime('14:00:00')) {
+            $consumptions[] = [
+                'meeting_id' => $meeting->id,
+                'type' => 'Snack Sore',
+                'quantity' => $request->participants,
+                'cost_per_unit' => 20000,
+                'total_cost' => $request->participants * 20000,
+            ];
         }
 
-        return redirect()->route('meetings.create')->with('success', 'Meeting berhasil dipesan!');
+        // 3. Simpan ke tabel consumptions
+        foreach ($consumptions as $consumption) {
+            ConsumptionModel::create($consumption);
+        }
+
+        // 4. Update total_cost di tabel meetings
+        $totalCost = array_sum(array_column($consumptions, 'total_cost'));
+        $meeting->update(['total_cost' => $totalCost]);
+
+        // 5. Redirect atau response
+        return redirect()->route('homepage')->with('success', 'Meeting berhasil ditambahkan!');
     }
 
-    public function getUnits()
-    {
-        $units = UnitModel::units();
-        return response()->json($units);
-    }
 }

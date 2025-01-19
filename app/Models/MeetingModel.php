@@ -9,8 +9,14 @@ class MeetingModel extends Model
 {
     use HasFactory;
 
+    protected $table = 'meetings';
     protected $fillable = [
-        'user_id', 'room_id', 'meeting_date', 'start_time', 'end_time', 'participants', 'total_cost'
+        'room_id',
+        'meeting_date',
+        'start_time',
+        'end_time',
+        'participants',
+        'total_cost',
     ];
 
     public function room()

@@ -34,8 +34,8 @@
 
 		<!-- Form -->
 		<div class="bg-white p-6 rounded-lg shadow-lg">
-			<form action="" method="POST">
-				{{-- {{ route('save_meeting') }} --}}
+			<form action="{{ route('save_meeting') }}" method="POST">
+
 				@csrf
 
 				<!-- Informasi Ruang Meeting -->
@@ -85,7 +85,13 @@
 							<select id="start_time" name="start_time" class="w-full border-gray-300 rounded-lg"
 								required>
 								<option value="" selected>Pilih Waktu Mulai</option>
-								<!-- Add options dynamically -->
+								@foreach (range(0, 23) as $hour)
+								@foreach ([0, 30] as $minute)
+								<option value="{{ sprintf('%02d:%02d', $hour, $minute) }}">
+									{{ sprintf('%02d:%02d', $hour, $minute) }}
+								</option>
+								@endforeach
+								@endforeach
 							</select>
 						</div>
 						<div>
@@ -93,35 +99,42 @@
 							<label for="unit" class="text-red-500">*</label>
 							<select id="end_time" name="end_time" class="w-full border-gray-300 rounded-lg" required>
 								<option value="" selected>Pilih Waktu Selesai</option>
-								<!-- Add options dynamically -->
+								@foreach (range(0, 23) as $hour)
+								@foreach ([0, 30] as $minute)
+								<option value="{{ sprintf('%02d:%02d', $hour, $minute) }}">
+									{{ sprintf('%02d:%02d', $hour, $minute) }}
+								</option>
+								@endforeach
+								@endforeach
 							</select>
 						</div>
 						<div>
 							<label for="participants" class="text-gray-600">Jumlah Peserta</label>
 							<label for="unit" class="text-red-500">*</label>
 							<input id="participants" name="participants" type="number"
-								class="w-full border-gray-300 rounded-lg" required>
+								class="w-full border-gray-300 rounded-lg" required min="1"
+								max="{{ $room->capacity ?? 0 }}" required>
+
 						</div>
 					</div>
 
 					<!-- Jenis Konsumsi -->
 					<div class="mt-4">
 						<label class="text-gray-600">Jenis Konsumsi</label>
-						<label for="unit" class="text-red-500">*</label>
 						<div class="flex gap-4 mt-2">
 							<label class="flex items-center">
-								<input type="checkbox" name="consumption[]" value="Snack Siang"
-									class="text-blue-500 border-gray-300 rounded">
+								<input type="checkbox" id="snack_siang" name="consumption[]" value="Snack Siang"
+									class="text-blue-500 border-gray-300 rounded" disabled>
 								<span class="ml-2">Snack Siang</span>
 							</label>
 							<label class="flex items-center">
-								<input type="checkbox" name="consumption[]" value="Makan Siang"
-									class="text-blue-500 border-gray-300 rounded">
+								<input type="checkbox" id="makan_siang" name="consumption[]" value="Makan Siang"
+									class="text-blue-500 border-gray-300 rounded" disabled>
 								<span class="ml-2">Makan Siang</span>
 							</label>
 							<label class="flex items-center">
-								<input type="checkbox" name="consumption[]" value="Snack Sore"
-									class="text-blue-500 border-gray-300 rounded">
+								<input type="checkbox" id="snack_sore" name="consumption[]" value="Snack Sore"
+									class="text-blue-500 border-gray-300 rounded" disabled>
 								<span class="ml-2">Snack Sore</span>
 							</label>
 						</div>
@@ -139,10 +152,12 @@
 
 				<!-- Buttons -->
 				<div class="mt-6 flex justify-end gap-4">
-					<button type="button" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400">
-						Batal
-					</button>
-					<button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+					<a href="/">
+						<button type="button" class=" text-red-400 px-4 py-2 rounded-lg ">
+							Batal
+						</button>
+					</a>
+					<button type="submit" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-400">
 						Simpan
 					</button>
 				</div>
@@ -152,26 +167,119 @@
 </div>
 <script>
 	document.getElementById('room').addEventListener('change', function () {
-        const roomId = this.value; // Ambil ID room yang dipilih
+    const roomId = this.value; // Ambil ID room yang dipilih
 
-        if (roomId) {
-            // Panggil API untuk mendapatkan capacity
-            fetch(`/api/rooms/${roomId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.capacity) {
-                        document.getElementById('capacity').value = data.capacity; // Isi input kapasitas
-                    } else {
-                        document.getElementById('capacity').value = 0; // Default jika tidak ditemukan
-                        alert(data.error || 'Something went wrong');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        } else {
-            document.getElementById('capacity').value = 0; // Reset jika tidak ada room dipilih
-        }
-    });
+    if (roomId) {
+        // Panggil API untuk mendapatkan capacity
+        fetch(`/api/rooms/${roomId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.capacity) {
+                    document.getElementById('capacity').value = data.capacity;
+                    document.getElementById('participants').setAttribute('max', data.capacity);
+                } else {
+                    document.getElementById('capacity').value = 0;
+                    document.getElementById('participants').removeAttribute('max');
+                    Swal.fire('Error', data.error || 'Something went wrong', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire('Error', 'Gagal mengambil data kapasitas ruang meeting.', 'error');
+            });
+		} else {
+			document.getElementById('capacity').value = 0; // Reset jika tidak ada room dipilih
+		}
+	});
+
+	document.querySelector('form').addEventListener('submit', function (event) {
+		const startTime = document.getElementById('start_time').value;
+		const endTime = document.getElementById('end_time').value;
+
+		if (startTime >= endTime) {
+			event.preventDefault();
+			// Swal.fire({
+			// 	icon: 'error',
+			// 	title: 'Waktu Tidak Valid',
+			// 	text: 'Waktu selesai harus lebih besar dari waktu mulai.',
+			// });
+			alert('Waktu selesai harus lebih besar dari waktu mulai.');
+		} 
+	});
+
+	document.addEventListener('DOMContentLoaded', function () {
+		const startTimeInput = document.getElementById('start_time');
+		const endTimeInput = document.getElementById('end_time');
+		const participantsInput = document.getElementById('participants');
+		const costInput = document.getElementById('cost');
+
+		function calculateCost() {
+			const snackSiang = document.getElementById('snack_siang').checked;
+			const makanSiang = document.getElementById('makan_siang').checked;
+			const snackSore = document.getElementById('snack_sore').checked;
+
+			const participants = parseInt(participantsInput.value) || 0;
+
+			// Harga satuan konsumsi
+			const snackCost = 20000; // Harga Snack
+			const lunchCost = 30000; // Harga Makan Siang
+
+			let totalCost = 0;
+
+			if (snackSiang) totalCost += participants * snackCost;
+			if (makanSiang) totalCost += participants * lunchCost;
+			if (snackSore) totalCost += participants * snackCost;
+
+			// Format menjadi mata uang
+			costInput.value = `Rp. ${totalCost.toLocaleString('id-ID')}`;
+		}
+
+		function updateConsumption() {
+			const snackSiang = document.getElementById('snack_siang');
+			const makanSiang = document.getElementById('makan_siang');
+			const snackSore = document.getElementById('snack_sore');
+
+			// Reset konsumsi
+			snackSiang.checked = false;
+			makanSiang.checked = false;
+			snackSore.checked = false;
+
+			const startTime = startTimeInput.value;
+			const endTime = endTimeInput.value;
+
+			if (startTime && endTime) {
+				const start = new Date(`1970-01-01T${startTime}:00Z`).getTime();
+				const end = new Date(`1970-01-01T${endTime}:00Z`).getTime();
+
+				// Rule: Snack Siang jika mulai sebelum jam 11:00
+				if (start < new Date('1970-01-01T11:00:00Z').getTime()) {
+					snackSiang.checked = true;
+				}
+
+				// Rule: Makan Siang jika antara 11:00 dan 14:00
+				if (
+					(start <= new Date('1970-01-01T14:00:00Z').getTime() &&
+						end >= new Date('1970-01-01T11:00:00Z').getTime())
+				) {
+					makanSiang.checked = true;
+				}
+
+				// Rule: Snack Sore jika selesai setelah jam 14:00
+				if (end > new Date('1970-01-01T14:00:00Z').getTime()) {
+					snackSore.checked = true;
+				}
+			}
+
+			// Hitung biaya berdasarkan konsumsi
+			calculateCost();
+		}
+
+		// Event listener untuk perubahan input
+		startTimeInput.addEventListener('change', updateConsumption);
+		endTimeInput.addEventListener('change', updateConsumption);
+		participantsInput.addEventListener('input', calculateCost);
+	});
+
+
 </script>
 @endsection

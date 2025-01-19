@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\MeetingController;
 use App\Models\RoomModel;
 use Illuminate\Support\Facades\Route;
 
@@ -29,3 +30,5 @@ Route::get('/api/rooms/{id}', function ($id) {
         return response()->json(['error' => 'Room not found'], 404);
     }
 });
+
+Route::post('/save-meeting', [MeetingController::class, 'store'])->name('save_meeting');
