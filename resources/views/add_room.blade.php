@@ -4,29 +4,135 @@
 <!-- Main Content -->
 <div class="flex-1 flex flex-col">
 	<!-- Content -->
-	<main class="p-6 flex">
+	<main class="p-6 flex flex-col">
 		<!-- Back Button -->
-		<a href="/" class="self-center">
-			<button style="height: 40px; align-self: center"
-				class="bg-[#18A2BA] text-white px-4 py-2 rounded-lg hover:bg-[#296377] fa-solid fa-chevron-left">
-			</button>
-		</a>
-		<div class="p-4 grid items-center justify-between mt-4">
-			<p class="text-gray-700 text-2xl">Add Meeting</p>
+		<div class="flex mb-4">
+			<a href="/" class="self-center">
+				<button style="height: 40px; align-self: center"
+					class="bg-[#18A2BA] text-white px-4 py-2 rounded-lg hover:bg-[#296377] fa-solid fa-chevron-left">
+				</button>
+			</a>
 
-			<!-- Breadcrumb -->
-			<nav class="text-sm font-medium text-gray-700">
-				<ol class="list-reset flex">
-					<li>
-						<a href="/" class="text-gray-400 hover:text-blue-700">ruang meeting</a>
-					</li>
-					<li class="mx-2">/</li>
-					<li>
-						<a href="{{ route('add_room') }}" class="text-blue-500 hover:text-blue-700">Add
-							Meeting</a>
-					</li>
-				</ol>
-			</nav>
+			<!-- Page Title and Breadcrumb -->
+			<div class="p-4 grid items-center justify-between mt-4">
+
+				<p class="text-gray-700 text-2xl">Add Meeting</p>
+
+				<nav class="text-sm font-medium text-gray-700">
+					<ol class="list-reset flex">
+						<li>
+							<a href="/" class="text-gray-400 hover:text-blue-700">Ruang Meeting</a>
+						</li>
+						<li class="mx-2">/</li>
+						<li>
+							<a href="{{ route('add_room') }}" class="text-blue-500 hover:text-blue-700">Add Meeting</a>
+						</li>
+					</ol>
+				</nav>
+			</div>
+		</div>
+
+		<!-- Form -->
+		<div class="bg-white p-6 rounded-lg shadow-lg">
+			<form action="" method="POST">
+				{{-- {{ route('save_meeting') }} --}}
+				@csrf
+
+				<!-- Informasi Ruang Meeting -->
+				<div>
+					<h2 class="text-lg font-semibold text-gray-800">Informasi Ruang Meeting</h2>
+					<div class="grid grid-cols-2 gap-4 mt-4">
+						<div>
+							<label for="unit" class="text-gray-600">Unit</label>
+							<select id="unit" name="unit" class="w-full border-gray-300 rounded-lg">
+								<option value="" selected>Pilih Unit</option>
+								<!-- Add options dynamically -->
+							</select>
+						</div>
+						<div>
+							<label for="room" class="text-gray-600">Ruang Meeting</label>
+							<select id="room" name="room" class="w-full border-gray-300 rounded-lg">
+								<option value="" selected>Pilih Ruang Meeting</option>
+								<!-- Add options dynamically -->
+							</select>
+						</div>
+						<div>
+							<label for="capacity" class="text-gray-600">Kapasitas</label>
+							<input id="capacity" name="capacity" type="text" class="w-full border-gray-300 rounded-lg"
+								value="0" readonly>
+						</div>
+					</div>
+				</div>
+
+				<!-- Informasi Rapat -->
+				<div class="mt-8">
+					<h2 class="text-lg font-semibold text-gray-800">Informasi Rapat</h2>
+					<div class="grid grid-cols-2 gap-4 mt-4">
+						<div>
+							<label for="date" class="text-gray-600">Tanggal Rapat</label>
+							<input id="date" name="date" type="date" class="w-full border-gray-300 rounded-lg" required>
+						</div>
+						<div>
+							<label for="start_time" class="text-gray-600">Waktu Mulai</label>
+							<select id="start_time" name="start_time" class="w-full border-gray-300 rounded-lg">
+								<option value="" selected>Pilih Waktu Mulai</option>
+								<!-- Add options dynamically -->
+							</select>
+						</div>
+						<div>
+							<label for="end_time" class="text-gray-600">Waktu Selesai</label>
+							<select id="end_time" name="end_time" class="w-full border-gray-300 rounded-lg">
+								<option value="" selected>Pilih Waktu Selesai</option>
+								<!-- Add options dynamically -->
+							</select>
+						</div>
+						<div>
+							<label for="participants" class="text-gray-600">Jumlah Peserta</label>
+							<input id="participants" name="participants" type="number"
+								class="w-full border-gray-300 rounded-lg">
+						</div>
+					</div>
+
+					<!-- Jenis Konsumsi -->
+					<div class="mt-4">
+						<label class="text-gray-600">Jenis Konsumsi</label>
+						<div class="flex gap-4 mt-2">
+							<label class="flex items-center">
+								<input type="checkbox" name="consumption[]" value="Snack Siang"
+									class="text-blue-500 border-gray-300 rounded">
+								<span class="ml-2">Snack Siang</span>
+							</label>
+							<label class="flex items-center">
+								<input type="checkbox" name="consumption[]" value="Makan Siang"
+									class="text-blue-500 border-gray-300 rounded">
+								<span class="ml-2">Makan Siang</span>
+							</label>
+							<label class="flex items-center">
+								<input type="checkbox" name="consumption[]" value="Snack Sore"
+									class="text-blue-500 border-gray-300 rounded">
+								<span class="ml-2">Snack Sore</span>
+							</label>
+						</div>
+					</div>
+
+					<!-- Nominal Konsumsi -->
+					<div class="mt-4">
+						<label for="cost" class="text-gray-600">Nominal Konsumsi</label>
+						<input id="cost" name="cost" type="text" class="w-full border-gray-300 rounded-lg"
+							value="Rp. 0">
+					</div>
+				</div>
+
+				<!-- Buttons -->
+				<div class="mt-6 flex justify-end gap-4">
+					<button type="button" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400">
+						Batal
+					</button>
+					<button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+						Simpan
+					</button>
+				</div>
+			</form>
 		</div>
 	</main>
 </div>
