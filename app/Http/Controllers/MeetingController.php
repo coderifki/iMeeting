@@ -1,16 +1,17 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Models\Consumption;
-use App\Models\Meeting;
-use App\Models\Room;
+use App\Models\ConsumptionModel;
+use App\Models\MeetingModel;
+use App\Models\RoomModel;
+use App\Models\UnitModel;
 use Illuminate\Http\Request;
 
 class MeetingController extends Controller
 {
     public function create()
     {
-        $rooms = Room::all();
+        $rooms = RoomModel::all();
         return view('meetings.create', compact('rooms'));
     }
 
@@ -25,7 +26,7 @@ class MeetingController extends Controller
         ]);
 
         // Validasi Kapasitas Ruangan
-        $room = Room::findOrFail($request->room_id);
+        $room = RoomModel::findOrFail($request->room_id);
         if ($request->participants > $room->capacity) {
             return back()->withErrors(['participants' => 'Jumlah peserta tidak boleh lebih besar dari kapasitas ruangan.']);
         }
@@ -70,7 +71,7 @@ class MeetingController extends Controller
         }
 
         // Simpan Meeting
-        $meeting = Meeting::create([
+        $meeting = MeetingModel::create([
             'room_id' => $request->room_id,
             'meeting_date' => $request->meeting_date,
             'start_time' => $request->start_time,
@@ -85,5 +86,11 @@ class MeetingController extends Controller
         }
 
         return redirect()->route('meetings.create')->with('success', 'Meeting berhasil dipesan!');
+    }
+
+    public function getUnits()
+    {
+        $units = UnitModel::units();
+        return response()->json($units);
     }
 }

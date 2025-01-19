@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Meeting extends Model
+class MeetingModel extends Model
 {
     use HasFactory;
 
@@ -15,7 +15,7 @@ class Meeting extends Model
 
     public function room()
     {
-        return $this->belongsTo(Room::class);
+        return $this->belongsTo(RoomModel::class);
     }
 
     public function user()
@@ -25,6 +25,6 @@ class Meeting extends Model
 
     public function consumptions()
     {
-        return $this->hasMany(Consumption::class);
+        return $this->hasMany(ConsumptionModel::class);
     }
 }

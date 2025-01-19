@@ -44,22 +44,28 @@
 					<div class="grid grid-cols-2 gap-4 mt-4">
 						<div>
 							<label for="unit" class="text-gray-600">Unit</label>
-							<select id="unit" name="unit" class="w-full border-gray-300 rounded-lg">
+							<label for="unit" class="text-red-500">*</label>
+							<select id="unit" name="unit" class="w-full border-gray-300 rounded-lg" required>
 								<option value="" selected>Pilih Unit</option>
-								<!-- Add options dynamically -->
+								@foreach ($units as $unit)
+								<option value="{{ $unit->id }}">{{ $unit->name }}</option>
+								@endforeach
 							</select>
 						</div>
 						<div>
 							<label for="room" class="text-gray-600">Ruang Meeting</label>
-							<select id="room" name="room" class="w-full border-gray-300 rounded-lg">
+							<label for="unit" class="text-red-500">*</label>
+							<select id="room" name="room" class="w-full border-gray-300 rounded-lg" required>
 								<option value="" selected>Pilih Ruang Meeting</option>
-								<!-- Add options dynamically -->
+								@foreach ($rooms as $room)
+								<option value="{{ $room->id }}">{{ $room->name }}</option>
+								@endforeach
 							</select>
 						</div>
 						<div>
 							<label for="capacity" class="text-gray-600">Kapasitas</label>
-							<input id="capacity" name="capacity" type="text" class="w-full border-gray-300 rounded-lg"
-								value="0" readonly>
+							<input id="capacity" name="capacity" type="text"
+								class="w-full bg-gray-300 border-gray-300 rounded-lg" value="0" readonly>
 						</div>
 					</div>
 				</div>
@@ -70,32 +76,38 @@
 					<div class="grid grid-cols-2 gap-4 mt-4">
 						<div>
 							<label for="date" class="text-gray-600">Tanggal Rapat</label>
+							<label for="unit" class="text-red-500">*</label>
 							<input id="date" name="date" type="date" class="w-full border-gray-300 rounded-lg" required>
 						</div>
 						<div>
 							<label for="start_time" class="text-gray-600">Waktu Mulai</label>
-							<select id="start_time" name="start_time" class="w-full border-gray-300 rounded-lg">
+							<label for="unit" class="text-red-500">*</label>
+							<select id="start_time" name="start_time" class="w-full border-gray-300 rounded-lg"
+								required>
 								<option value="" selected>Pilih Waktu Mulai</option>
 								<!-- Add options dynamically -->
 							</select>
 						</div>
 						<div>
 							<label for="end_time" class="text-gray-600">Waktu Selesai</label>
-							<select id="end_time" name="end_time" class="w-full border-gray-300 rounded-lg">
+							<label for="unit" class="text-red-500">*</label>
+							<select id="end_time" name="end_time" class="w-full border-gray-300 rounded-lg" required>
 								<option value="" selected>Pilih Waktu Selesai</option>
 								<!-- Add options dynamically -->
 							</select>
 						</div>
 						<div>
 							<label for="participants" class="text-gray-600">Jumlah Peserta</label>
+							<label for="unit" class="text-red-500">*</label>
 							<input id="participants" name="participants" type="number"
-								class="w-full border-gray-300 rounded-lg">
+								class="w-full border-gray-300 rounded-lg" required>
 						</div>
 					</div>
 
 					<!-- Jenis Konsumsi -->
 					<div class="mt-4">
 						<label class="text-gray-600">Jenis Konsumsi</label>
+						<label for="unit" class="text-red-500">*</label>
 						<div class="flex gap-4 mt-2">
 							<label class="flex items-center">
 								<input type="checkbox" name="consumption[]" value="Snack Siang"
@@ -116,10 +128,12 @@
 					</div>
 
 					<!-- Nominal Konsumsi -->
-					<div class="mt-4">
-						<label for="cost" class="text-gray-600">Nominal Konsumsi</label>
-						<input id="cost" name="cost" type="text" class="w-full border-gray-300 rounded-lg"
-							value="Rp. 0">
+					<div class="grid grid-cols-2  mt-4">
+						<div>
+							<label for="cost" class="text-gray-600">Nominal Konsumsi</label>
+							<input id="cost" name="cost" type="text"
+								class="w-full bg-gray-300 border-gray-300 rounded-lg" value="Rp. 0" readonly>
+						</div>
 					</div>
 				</div>
 
@@ -136,4 +150,28 @@
 		</div>
 	</main>
 </div>
+<script>
+	document.getElementById('room').addEventListener('change', function () {
+        const roomId = this.value; // Ambil ID room yang dipilih
+
+        if (roomId) {
+            // Panggil API untuk mendapatkan capacity
+            fetch(`/api/rooms/${roomId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.capacity) {
+                        document.getElementById('capacity').value = data.capacity; // Isi input kapasitas
+                    } else {
+                        document.getElementById('capacity').value = 0; // Default jika tidak ditemukan
+                        alert(data.error || 'Something went wrong');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        } else {
+            document.getElementById('capacity').value = 0; // Reset jika tidak ada room dipilih
+        }
+    });
+</script>
 @endsection
