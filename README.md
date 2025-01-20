@@ -4,14 +4,24 @@
 
 ```bash
 git clone https://github.com/coderifki/iMeeting.git 
-```
 or
-```bash
 git clone git@github.com:coderifki/iMeeting.git
 ```
 After cloning the repository, navigate to the project directory:
 ```bash
 cd <your-project-folder>
+```
+change the branch into master or development
+```bash
+git checkout development
+or
+git switch development
+```
+then pull the repo
+```bash
+git pull origin development
+or 
+git pull origin master
 ```
 Install PHP dependencies using Composer:
 ```bash
