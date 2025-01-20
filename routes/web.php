@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\MeetingController;
+use App\Models\RoomModel;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,10 +16,19 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/create_roomeeting', function () {
-    return view('add_room');
-})->name('add_room'); // Added route name for add_room
+Route::get('/create_roomeeting', [Controller::class, 'create'])->name('add_room'); // Route ke method create()
 
 Route::get('/', function () {
     return view('homepage');
-})->name('homepage'); // Added route name for homepage
+})->name('homepage');
+
+Route::get('/api/rooms/{id}', function ($id) {
+    $room = RoomModel::find($id);
+    if ($room) {
+        return response()->json(['capacity' => $room->capacity]);
+    } else {
+        return response()->json(['error' => 'Room not found'], 404);
+    }
+});
+
+Route::post('/save-meeting', [MeetingController::class, 'store'])->name('save_meeting');

@@ -1,3 +1,53 @@
+# About Running The App
+
+- First, clone the repository to your local environment using the following command:
+
+```bash
+git clone https://github.com/coderifki/iMeeting.git 
+```
+or
+```bash
+git clone git@github.com:coderifki/iMeeting.git
+```
+After cloning the repository, navigate to the project directory:
+```bash
+cd <your-project-folder>
+```
+Install PHP dependencies using Composer:
+```bash
+composer install
+```
+Install JavaScript dependencies using npm:
+```bash
+npm install
+```
+Import the database:
+
+Use the provided SQL file named dump-imeeting-202501201234.sql.
+You can import this file into your database using a tool like phpMyAdmin or the following command in your MySQL terminal:
+```bash
+mysql -u your-username -p your-database-name < dump-imeeting-202501201234.sql
+```
+Update the .env file:
+
+Make sure your .env file is correctly configured with your database credentials and other environment settings.
+Example .env file configuration:
+```bash
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=your-database-name
+DB_USERNAME=your-username
+DB_PASSWORD=your-password
+```
+Start the application server:
+```bash
+php artisan serve
+npm run dev
+```
+
+
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
@@ -64,3 +114,5 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+
