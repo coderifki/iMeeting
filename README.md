@@ -36,7 +36,7 @@ Import the database:
 Use the provided SQL file named dump-imeeting-202501201234.sql.
 You can import this file into your database using a tool like phpMyAdmin or the following command in your MySQL terminal:
 ```bash
-mysql -u your-username -p your-database-name < dump-imeeting-202501201234.sql
+mysql -u your-username -p your-database-name < dump-imeeting-202501201234.sql >
 ```
 Update the .env file:
 
